@@ -1,0 +1,79 @@
+name: konnect
+description: A new Flutter project.
+
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.7.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  #State Management
+  get: ^3.26.0
+
+  #architecture
+  get_it: ^4.0.4
+  contacts_service: ^0.4.6
+  permission_handler:
+  
+  #firebase
+  firebase_auth:
+  cloud_firestore: 
+  firebase_storage:
+  firebase_dynamic_links:
+  google_sign_in:
+
+  #UI
+  cupertino_icons: ^1.0.0
+  flutter_svg: 0.18.0
+  fluttertoast:
+  image_picker:
+  intl: ^0.16.0
+  
+  #sharing
+  share:
+
+  #others
+  path_provider:
+  http:
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  
+  flutter_launcher_icons:
+
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/app-logo.png"
+  
+
+flutter:
+
+  uses-material-design: true
+
+  assets:
+    - assets/icons/
+
+  fonts:
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/Poppins/Poppins-ExtraLight.ttf
+          weight: 200
+        - asset: assets/fonts/Poppins/Poppins-Regular.ttf
+          weight: 300
+        - asset: assets/fonts/Poppins/Poppins-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Poppins/Poppins-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Poppins/Poppins-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Poppins/Poppins-ExtraBold.ttf
+          weight: 800
+
+
