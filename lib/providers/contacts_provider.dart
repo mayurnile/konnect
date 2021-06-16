@@ -6,11 +6,11 @@ import 'package:permission_handler/permission_handler.dart';
 import '../core/models/models.dart';
 
 class ContactsProvider extends GetxController {
-  FirebaseFirestore _firestore;
+  late FirebaseFirestore _firestore;
 
   List<KonnectContact> _contacts = [];
-  ContactsState _state;
-  String _errorMessage;
+  ContactsState _state = ContactsState.LOADING;
+  String _errorMessage = '';
 
   @override
   void onInit() {
@@ -18,11 +18,6 @@ class ContactsProvider extends GetxController {
 
     //initialize firebase
     _firestore = FirebaseFirestore.instance;
-
-    //initialize variables
-    _contacts = [];
-    _errorMessage = '';
-    _state = ContactsState.LOADING;
   }
 
   get contacts => _contacts;
@@ -53,9 +48,9 @@ class ContactsProvider extends GetxController {
       }
 
       deviceContacts.forEach((contact) async {
-        if (contact.phones.isNotEmpty) {
+        if (contact.phones != null && contact.phones!.isNotEmpty) {
           String noSpacePhone =
-              contact.phones.first.value.toString().replaceAll(' ', '');
+              contact.phones!.first.value.toString().replaceAll(' ', '');
           String noDashPhone = noSpacePhone.replaceAll('-', '');
           String searchString = noDashPhone.contains('+')
               ? noDashPhone.substring(3)
@@ -65,12 +60,12 @@ class ContactsProvider extends GetxController {
               await _firestore.collection('users').doc('$searchString').get();
 
           if (snapshot.exists) {
-            Map<String, dynamic> data = snapshot.data();
+            Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
             String name =
                 data['name'].length == 0 ? contact.displayName : data['name'];
             String email = data['email'].length == 0 ? '' : data['email'];
-            String phoneNumber = data['phoneNumber'];
-            String photoURL = data['avatar'];
+            String phoneNumber = data['phoneNumber'] ?? '';
+            String photoURL = data['avatar'] ?? '';
 
             KonnectContact myContact = KonnectContact(
               name: name,
@@ -83,10 +78,13 @@ class ContactsProvider extends GetxController {
             _contacts.insert(0, myContact);
           } else {
             KonnectContact myContact = KonnectContact(
-              name: contact.displayName,
-              email:
-                  contact.emails.isNotEmpty ? contact.emails.first.value : '',
-              phone: contact.phones.first.value,
+              name: contact.displayName ?? '',
+              email: contact.emails!.isNotEmpty
+                  ? contact.emails!.first.value!
+                  : '',
+              phone: contact.phones != null
+                  ? contact.phones!.first.value ?? ''
+                  : '',
               isRegistered: false,
               photoURL: '',
             );

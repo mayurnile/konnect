@@ -18,5 +18,5 @@ void initProviders() {
 
   //rooms provider
   RoomsProvider roomsProvider = Get.put(RoomsProvider());
-  locator.registerSingleton(() => roomsProvider);
+  locator.registerLazySingleton(() => roomsProvider);
 }

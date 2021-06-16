@@ -1,25 +1,23 @@
-import 'package:flutter/material.dart';
-
 class Message {
   final String message;
   final String sender;
   final DateTime createdTime;
 
   Message({
-    @required this.message,
-    @required this.sender,
-    @required this.createdTime,
+    required this.message,
+    required this.sender,
+    required this.createdTime,
   });
 
-  factory Message.fromJSON(Map<String, dynamic> data) {
+  factory Message.fromJSON(Map<String, dynamic>? data) {
     return Message(
-      message: data['message'],
-      sender: data['sender'],
-      createdTime: DateTime.parse(data['created_time']),
+      message: data != null ? data['message'] ?? '' : '',
+      sender: data != null ?  data['sender'] ?? '' : '',
+      createdTime: data != null ? DateTime.parse(data['created_time']) : DateTime(1999),
     );
   }
 
-  static Map<String, dynamic> toJSON(Message message) {
+  static Map<String, dynamic> toJSON({required Message message}) {
     return {
       'message': message.message,
       'sender' : message.sender,

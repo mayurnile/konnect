@@ -7,10 +7,10 @@ class MyTab extends StatelessWidget {
   final Function onTap;
 
   MyTab({
-    Key key,
-    @required this.title,
-    @required this.isSelected,
-    this.onTap,
+    Key? key,
+    required this.title,
+    required this.isSelected,
+    required this.onTap,
   });
 
   @override
@@ -18,7 +18,7 @@ class MyTab extends StatelessWidget {
     final TextTheme textTheme = Theme.of(context).textTheme;
 
     return InkWell(
-      onTap: onTap,
+      onTap: () => onTap(),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -39,8 +39,8 @@ class MyTab extends StatelessWidget {
           Text(
             title,
             style: isSelected
-                ? textTheme.headline4.copyWith(color: Colors.white)
-                : textTheme.headline3.copyWith(
+                ? textTheme.headline4!.copyWith(color: Colors.white)
+                : textTheme.headline3!.copyWith(
                     color: Colors.white.withOpacity(0.7),
                   ),
           ),

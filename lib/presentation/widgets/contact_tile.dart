@@ -10,7 +10,7 @@ import '../../core/models/models.dart';
 class ContactTile extends StatelessWidget {
   final KonnectContact contact;
 
-  ContactTile({Key key, @required this.contact}) : super(key: key);
+  ContactTile({Key? key, required this.contact}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +22,7 @@ class ContactTile extends StatelessWidget {
         leading: _buildLeadingWidget(),
         title: Text(
           contact.name,
-          style: textTheme.headline4.copyWith(fontWeight: FontWeight.w600),
+          style: textTheme.headline4!.copyWith(fontWeight: FontWeight.w600),
         ),
         trailing: _buildTrailingWidget(),
       ),
@@ -30,6 +30,7 @@ class ContactTile extends StatelessWidget {
   }
 
   Widget _buildLeadingWidget() {
+    // ignore: unnecessary_null_comparison
     return contact.photoURL != null && contact.photoURL.length != 0
         ? CircleAvatar(
             child: ClipRRect(
@@ -51,21 +52,28 @@ class ContactTile extends StatelessWidget {
 
   Widget _buildTrailingWidget() {
     return contact.isRegistered
-        ? FlatButton(
-            padding: const EdgeInsets.all(0.0),
+        ? TextButton(
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.all(0.0),
+            ),
             onPressed: () async {
               AuthProvider authProvider = Get.find();
               RoomsProvider provider = Get.find();
               await provider.createRoom(
-                  contact, authProvider.phoneNumber, contact.phone);
+                contact,
+                authProvider.phoneNumber,
+                contact.phone,
+              );
             },
             child: Text(
               'Chat',
               style: TextStyle(color: KonnectTheme.SECONDARY_COLOR),
             ),
           )
-        : FlatButton(
-            padding: const EdgeInsets.all(0.0),
+        : TextButton(
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.all(0.0),
+            ),
             onPressed: () {
               Share.share(
                 'Join in to our community of privacy lovers, by using Konnect over other chat applications, here is the download link : *App Link*',

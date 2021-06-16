@@ -19,9 +19,9 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final AuthProvider authProvider = Get.find();
 
-  int _currentIndex;
+  int _currentIndex = 0;
 
-  List<Widget> _screens;
+  List<Widget> _screens = [];
 
   @override
   void initState() {

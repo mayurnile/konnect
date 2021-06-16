@@ -2,6 +2,7 @@ import 'package:intl/intl.dart' as intl;
 
 extension DifferenceExtension on DateTime {
   String getChatMessageTimeFormat() {
+    // ignore: unnecessary_null_comparison
     if (this == null) return '--:--';
     final todaysDate = DateTime.now();
 

@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 class Room {
   final String id;
   final String name;
@@ -9,11 +7,11 @@ class Room {
   final DateTime timestamp;
 
   Room({
-    @required this.id,
-    @required this.name,
-    @required this.photoURL,
-    @required this.phone,
-    @required this.latestMessage,
-    @required this.timestamp,
+    required this.id,
+    required this.name,
+    required this.photoURL,
+    required this.phone,
+    required this.latestMessage,
+    required this.timestamp,
   });
 }

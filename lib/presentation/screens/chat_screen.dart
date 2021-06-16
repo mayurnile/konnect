@@ -12,9 +12,9 @@ class ChatScreen extends StatefulWidget {
   final KonnectContact receiverContact;
 
   ChatScreen({
-    Key key,
-    @required this.roomId,
-    @required this.receiverContact,
+    Key? key,
+    required this.roomId,
+    required this.receiverContact,
   }) : super(key: key);
 
   @override
@@ -65,7 +65,7 @@ class _ChatScreenState extends State<ChatScreen> {
             width: screenSize.width * 0.4,
             child: Text(
               widget.receiverContact.name,
-              style: textTheme.headline4.copyWith(color: Colors.white),
+              style: textTheme.headline4!.copyWith(color: Colors.white),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -83,7 +83,8 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _buildUserAvatar() {
-    return widget.receiverContact.photoURL != null
+    // ignore: unnecessary_null_comparison
+    return widget.receiverContact.photoURL.length != 0
         ? CircleAvatar(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(52.0),
@@ -136,17 +137,29 @@ class _ChatScreenState extends State<ChatScreen> {
                     );
                   } else if (_roomsProvider.roomsState ==
                       RoomsState.CHAT_LOADED) {
-                    return ListView.builder(
-                      reverse: true,
-                      physics: BouncingScrollPhysics(),
-                      padding: const EdgeInsets.only(bottom: 72.0),
-                      itemCount: _roomsProvider.messages.length,
-                      itemBuilder: (BuildContext ctx, index) {
-                        return ChatBubble(
-                          message: _roomsProvider.messages[index],
-                        );
-                      },
-                    );
+                    return StreamBuilder(
+                        stream: _roomsProvider.chatsStream(widget.roomId),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) {
+                            return Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          } else {
+                            List<Message> _messages = _roomsProvider
+                                .mapChatDocsToList(snapshot.data!);
+                            return ListView.builder(
+                              reverse: true,
+                              physics: BouncingScrollPhysics(),
+                              padding: const EdgeInsets.only(bottom: 72.0),
+                              itemCount: _messages.length,
+                              itemBuilder: (BuildContext ctx, index) {
+                                return ChatBubble(
+                                  message: _messages[index],
+                                );
+                              },
+                            );
+                          }
+                        });
                   } else if (_roomsProvider.roomsState == RoomsState.NO_CHAT) {
                     return Center(
                       child: Text('No Chats Yet...'),
@@ -156,7 +169,6 @@ class _ChatScreenState extends State<ChatScreen> {
                       child: Text('${_roomsProvider.errorMessage}'),
                     );
                   }
-
                   return SizedBox.shrink();
                 },
               ),
@@ -177,7 +189,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget _buildMessageInput() {
     return GetBuilder<RoomsProvider>(builder: (RoomsProvider _roomsProvider) {
       return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 8.0),
+        padding: const EdgeInsets.fromLTRB(18.0, 8.0, 8.0, 8.0),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(52.0),
           color: KonnectTheme.CARD_COLOR,
@@ -192,6 +204,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 onChanged: (String value) =>
                     _roomsProvider.setMessage = value.trim(),
                 keyboardType: TextInputType.multiline,
+                textInputAction: TextInputAction.send,
+                onFieldSubmitted: (String? value) =>
+                    _sendMessage(_roomsProvider),
                 decoration: InputDecoration(
                   hintText: 'Type your message',
                   border: InputBorder.none,
@@ -200,18 +215,7 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
             //send button
             InkWell(
-              onTap: () async {
-                AuthProvider _authProvider = Get.find();
-                Message message = Message(
-                  createdTime: DateTime.now(),
-                  message: _roomsProvider.message,
-                  sender: _authProvider.phoneNumber,
-                );
-
-                await _roomsProvider.sendMessage(widget.roomId, message);
-                _messageController.text = '';
-                _roomsProvider.getAllMessagesFromRoom(widget.roomId);
-              },
+              onTap: () => _sendMessage(_roomsProvider),
               child: Container(
                 padding: const EdgeInsets.all(12.0),
                 decoration: BoxDecoration(
@@ -229,5 +233,20 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
       );
     });
+  }
+
+  Future<void> _sendMessage(RoomsProvider _roomsProvider) async {
+    if (_roomsProvider.message.length != 0) {
+      AuthProvider _authProvider = Get.find();
+      Message message = Message(
+        createdTime: DateTime.now(),
+        message: _roomsProvider.message,
+        sender: _authProvider.phoneNumber,
+      );
+
+      await _roomsProvider.sendMessage(widget.roomId, message);
+      _messageController.text = '';
+      _roomsProvider.getAllMessagesFromRoom(widget.roomId);
+    }
   }
 }

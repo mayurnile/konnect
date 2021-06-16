@@ -44,7 +44,7 @@ class Login extends StatelessWidget {
                 child: Text.rich(
                   TextSpan(
                     text: 'Welcome Back,\n',
-                    style: textTheme.headline1
+                    style: textTheme.headline1!
                         .copyWith(fontWeight: FontWeight.w300),
                     children: [
                       TextSpan(
@@ -60,15 +60,15 @@ class Login extends StatelessWidget {
             MyTextField(
               hint: 'Email address',
               inputType: TextInputType.emailAddress,
-              onChanged: (String value) =>
-                  _authProvider.setEmail = value.trim(),
+              onChanged: (String? value) =>
+                  _authProvider.setEmail = value!.trim(),
             ),
             //password input
             MyTextField(
               hint: 'Password',
               inputType: TextInputType.visiblePassword,
-              onChanged: (String value) =>
-                  _authProvider.setPassword = value.trim(),
+              onChanged: (String? value) =>
+                  _authProvider.setPassword = value!.trim(),
             ),
             //social login options
             _buildSocialLoginOptions(),
@@ -88,9 +88,11 @@ class Login extends StatelessWidget {
         //facebook login
         SizedBox(
           width: 32.0,
-          child: FlatButton(
+          child: TextButton(
             onPressed: _facebookLogin,
-            padding: const EdgeInsets.all(0.0),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.all(0.0),
+            ),
             child: SvgPicture.asset(
               Assets.FACEBOOK,
               height: 32.0,
@@ -103,9 +105,11 @@ class Login extends StatelessWidget {
         //google login
         SizedBox(
           width: 32.0,
-          child: FlatButton(
+          child: TextButton(
             onPressed: _googleLogin,
-            padding: const EdgeInsets.all(0.0),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.all(0.0),
+            ),
             child: SvgPicture.asset(
               Assets.GOOGLE,
               height: 32.0,
@@ -141,8 +145,11 @@ class Login extends StatelessWidget {
               child: SizedBox(
                 width: screenSize.width * 0.15,
                 height: screenSize.width * 0.15,
-                child: RaisedButton(
-                  elevation: 0.0,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    elevation: 0.0,
+                    primary: KonnectTheme.SECONDARY_COLOR,
+                  ),
                   child: _authProvider.authState == AuthState.AUTHENTICATING
                       ? SizedBox(
                           height: 24.0,
@@ -168,10 +175,17 @@ class Login extends StatelessWidget {
             Positioned(
               top: 0,
               left: 22.0,
-              child: FlatButton(
+              child: TextButton(
                 onPressed: () {},
-                padding: const EdgeInsets.all(0.0),
-                child: Text('Forget Password ?'),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.all(0.0),
+                ),
+                child: Text(
+                  'Forget Password ?',
+                  style: TextStyle(
+                    color: KonnectTheme.FONT_DARK_COLOR,
+                  ),
+                ),
               ),
             ),
           ],

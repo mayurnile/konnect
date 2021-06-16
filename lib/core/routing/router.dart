@@ -10,10 +10,10 @@ Route<dynamic> generateRoute(RouteSettings settings) {
   switch (settings.name) {
     case '/':
       AuthProvider _authProvider = Get.find();
-      User user = _authProvider.firebaseAuth.currentUser;
+      User? user = _authProvider.firebaseAuth.currentUser;
 
       if (user != null) {
-        _authProvider.fetchUserDetails(user.phoneNumber);
+        _authProvider.fetchUserDetails(user.phoneNumber!);
         return _getPageRoute(HomeScreen(), settings);
       }
       return _getPageRoute(AuthScreen(), settings);
@@ -24,7 +24,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case VERIFY_PHONE_ROUTE:
       return _getPageRoute(VerifyPhoneScreen(), settings);
     case CHAT_ROUTE:
-      final Map<String, dynamic> args = settings.arguments;
+      final Map<String, dynamic> args = settings.arguments as Map<String, dynamic>;
       return _getPageRoute(
         ChatScreen(
           roomId: args['roomId'],
@@ -39,14 +39,14 @@ Route<dynamic> generateRoute(RouteSettings settings) {
 }
 
 PageRoute _getPageRoute(Widget child, RouteSettings settings) {
-  return _FadeRoute(child: child, routeName: settings.name);
+  return _FadeRoute(child: child, routeName: settings.name!);
 }
 
 class _FadeRoute extends PageRouteBuilder {
   final Widget child;
   final String routeName;
 
-  _FadeRoute({this.child, this.routeName})
+  _FadeRoute({required this.child,required this.routeName})
       : super(
           settings: RouteSettings(name: routeName),
           pageBuilder: (BuildContext context, Animation<double> animation,

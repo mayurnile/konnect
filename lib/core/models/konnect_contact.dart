@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 class KonnectContact {
   final String name;
   final String email;
@@ -8,10 +6,10 @@ class KonnectContact {
   final String photoURL;
 
   KonnectContact({
-    @required this.name,
-    @required this.email,
-    @required this.phone,
-    @required this.isRegistered,
-    @required this.photoURL,
+    required this.name,
+    required this.email,
+    required this.phone,
+    required this.isRegistered,
+    required this.photoURL,
   });
 }

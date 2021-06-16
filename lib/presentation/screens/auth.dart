@@ -11,10 +11,10 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen>
     with SingleTickerProviderStateMixin {
-  TabController _authTabController;
+  late TabController _authTabController;
 
-  Size screenSize;
-  TextTheme textTheme;
+  late Size screenSize;
+  late TextTheme textTheme;
 
   @override
   void initState() {

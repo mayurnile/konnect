@@ -7,9 +7,9 @@ class CircularButton extends StatelessWidget {
   final bool isSmall;
 
   CircularButton({
-    Key key,
-    @required this.icon,
-    @required this.onPressed,
+    Key? key,
+    required this.icon,
+    required this.onPressed,
     this.isSmall = false,
   }) : super(key: key);
 
@@ -18,7 +18,7 @@ class CircularButton extends StatelessWidget {
     final Size screenSize = MediaQuery.of(context).size;
 
     return InkWell(
-      onTap: onPressed,
+      onTap: () => onPressed(),
       child: Container(
         height: isSmall ? screenSize.width * 0.1 : screenSize.width * 0.15,
         width: isSmall ? screenSize.width * 0.1 : screenSize.width * 0.15,

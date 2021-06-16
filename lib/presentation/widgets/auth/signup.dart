@@ -43,7 +43,7 @@ class Signup extends StatelessWidget {
                 child: Text.rich(
                   TextSpan(
                     text: 'Hello There,\n',
-                    style: textTheme.headline1
+                    style: textTheme.headline1!
                         .copyWith(fontWeight: FontWeight.w300),
                     children: [
                       TextSpan(
@@ -60,28 +60,29 @@ class Signup extends StatelessWidget {
             MyTextField(
               hint: 'Name',
               inputType: TextInputType.text,
-              onChanged: (String value) => _authProvider.setName = value.trim(),
+              onChanged: (String? value) =>
+                  _authProvider.setName = value!.trim(),
             ),
             //email input
             MyTextField(
               hint: 'Email address',
               inputType: TextInputType.emailAddress,
-              onChanged: (String value) =>
-                  _authProvider.setEmail = value.trim(),
+              onChanged: (String? value) =>
+                  _authProvider.setEmail = value!.trim(),
             ),
             //password input
             MyTextField(
               hint: 'Password',
               inputType: TextInputType.visiblePassword,
-              onChanged: (String value) =>
-                  _authProvider.setPassword = value.trim(),
+              onChanged: (String? value) =>
+                  _authProvider.setPassword = value!.trim(),
             ),
             //password  again input
             MyTextField(
               hint: 'Password again',
               inputType: TextInputType.visiblePassword,
-              onChanged: (String value) =>
-                  _authProvider.setConfirmPassword = value.trim(),
+              onChanged: (String? value) =>
+                  _authProvider.setConfirmPassword = value!.trim(),
             ),
             //bottom spacing
             SizedBox(height: screenSize.height * 0.02),
@@ -115,8 +116,11 @@ class Signup extends StatelessWidget {
               child: SizedBox(
                 width: screenSize.width * 0.15,
                 height: screenSize.width * 0.15,
-                child: RaisedButton(
-                  elevation: 0.0,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    elevation: 0.0,
+                    primary: KonnectTheme.SECONDARY_COLOR,
+                  ),
                   child: _authProvider.authState == AuthState.AUTHENTICATING
                       ? SizedBox(
                           height: 24.0,

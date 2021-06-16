@@ -8,14 +8,14 @@ import 'auth_provider.dart';
 import '../core/models/models.dart';
 
 class RoomsProvider extends GetxController {
-  FirebaseFirestore _firestore;
+  late FirebaseFirestore _firestore;
 
   List<Room> _rooms = [];
   List<Message> _messages = [];
-  RoomsState _state;
-  String _errorMessage;
+  RoomsState _state = RoomsState.LOADING_ROOMS;
+  String _errorMessage = '';
 
-  String _message;
+  String _message = '';
 
   @override
   void onInit() {
@@ -23,13 +23,6 @@ class RoomsProvider extends GetxController {
 
     //initialize firebase
     _firestore = FirebaseFirestore.instance;
-
-    //initialize variables
-    _rooms = [];
-    _messages = [];
-    _message = '';
-    _errorMessage = '';
-    _state = RoomsState.LOADING_ROOMS;
   }
 
   //setters
@@ -48,7 +41,7 @@ class RoomsProvider extends GetxController {
           .collection('rooms')
           .doc('$roomId')
           .collection('messages')
-          .add(Message.toJSON(message));
+          .add(Message.toJSON(message: message));
 
       _message = '';
       update();
@@ -57,11 +50,42 @@ class RoomsProvider extends GetxController {
     }
   }
 
+  Stream chatsStream(String roomId) {
+    return _firestore
+        .collection('rooms')
+        .doc('$roomId')
+        .collection('messages')
+        .orderBy('created_time', descending: true)
+        .limit(20)
+        .snapshots();
+  }
+
+  List<Message> mapChatDocsToList(messagesQuerySnapshot) {
+    List<Message> _listOfMessages = [];
+    try {
+      if (messagesQuerySnapshot.docs.length == 0) {
+        _state = RoomsState.NO_CHAT;
+        update();
+        return _listOfMessages;
+      }
+
+      messagesQuerySnapshot.docs.forEach((messageDoc) {
+        Map<String, dynamic>? data = messageDoc.data() as Map<String, dynamic>?;
+        if (data != null) {
+          Message message = Message.fromJSON(data);
+          _listOfMessages.add(message);
+        }
+      });
+
+      return _listOfMessages;
+    } catch (e) {}
+    return _listOfMessages;
+  }
+
   Future<void> getAllMessagesFromRoom(String roomId) async {
     _messages = [];
     try {
       _state = RoomsState.LOADING_CHAT;
-      update();
 
       QuerySnapshot messagesQuerySnapshot = await _firestore
           .collection('rooms')
@@ -76,8 +100,11 @@ class RoomsProvider extends GetxController {
       }
 
       messagesQuerySnapshot.docs.forEach((messageDoc) {
-        Message message = Message.fromJSON(messageDoc.data());
-        _messages.add(message);
+        Map<String, dynamic>? data = messageDoc.data() as Map<String, dynamic>?;
+        if (data != null) {
+          Message message = Message.fromJSON(data);
+          _messages.add(message);
+        }
       });
 
       _messages.sort((a, b) => a.createdTime.isAfter(b.createdTime) ? 0 : 1);
@@ -105,52 +132,71 @@ class RoomsProvider extends GetxController {
     DocumentSnapshot roomsListSnapshot =
         await _firestore.collection('users').doc('$phoneNumber').get();
 
-    List<dynamic> roomsList = roomsListSnapshot.data()['rooms'];
+    List<dynamic>? roomsList = [];
+    if (roomsListSnapshot.data() != null) {
+      Map<String, dynamic> data =
+          roomsListSnapshot.data() as Map<String, dynamic>;
+      roomsList = data['rooms'];
+    }
 
     if (roomsList != null) {
       for (int i = 0; i < roomsList.length; i++) {
         DocumentSnapshot membersSnapshot =
             await _firestore.collection('rooms').doc('${roomsList[i]}').get();
-
-        List<dynamic> roomMembers = membersSnapshot.data()['members'];
+        Map<String, dynamic>? membersData;
+        if (membersSnapshot.exists)
+          membersData = membersSnapshot.data() as Map<String, dynamic>;
+        List<dynamic> roomMembers =
+            membersData != null ? membersData['members'] : [];
         String roomMemberNumber = '';
         roomMembers.forEach((member) {
           if (member != phoneNumber) roomMemberNumber = member;
         });
 
-        DocumentSnapshot memberSnapshot =
-            await _firestore.collection('users').doc('$roomMemberNumber').get();
+        DocumentSnapshot? memberSnapshot;
+        if (roomMemberNumber.length != 0)
+          memberSnapshot = await _firestore
+              .collection('users')
+              .doc('$roomMemberNumber')
+              .get();
 
-        String memberName = memberSnapshot.data()['name'];
-        String photoURL = memberSnapshot.data()['avatar'];
-        String phone = memberSnapshot.data()['phoneNumber'];
-        QuerySnapshot messagesSnapshot = await _firestore
-            .collection('rooms')
-            .doc('${roomsList[i]}')
-            .collection('messages')
-            .orderBy('created_time', descending: true)
-            .limit(1)
-            .get();
+        if (memberSnapshot != null && memberSnapshot.exists) {
+          Map<String, dynamic> memberData =
+              memberSnapshot.data() as Map<String, dynamic>;
 
-        String latestMessage = messagesSnapshot.docs.isEmpty
-            ? 'No messages yet...'
-            : messagesSnapshot.docs.first.data()['message'];
-        DateTime timestamp = messagesSnapshot.docs.isEmpty
-            ? null
-            : DateTime.parse(
-                messagesSnapshot.docs.first.data()['created_time']);
+          String memberName = memberData['name'] ?? '';
+          String photoURL = memberData['avatar'] ?? '';
+          String phone = memberData['phoneNumber'] ?? '';
+          QuerySnapshot messagesSnapshot = await _firestore
+              .collection('rooms')
+              .doc('${roomsList[i]}')
+              .collection('messages')
+              .orderBy('created_time', descending: true)
+              .limit(1)
+              .get();
 
-        Room incomingRoom = Room(
-          id: roomsList[i],
-          name: memberName,
-          photoURL: photoURL,
-          latestMessage: latestMessage,
-          timestamp: timestamp,
-          phone: phone,
-        );
+          Map<String, dynamic> messageData = {};
+          if (messagesSnapshot.docs.isNotEmpty)
+            messageData =
+                messagesSnapshot.docs.first.data() as Map<String, dynamic>;
+          String latestMessage = messagesSnapshot.docs.isEmpty
+              ? 'No messages yet...'
+              : messageData['message'];
+          DateTime timestamp = messagesSnapshot.docs.isEmpty
+              ? DateTime(1999)
+              : DateTime.parse(messageData['created_time']);
 
-        _rooms.add(incomingRoom);
+          Room incomingRoom = Room(
+            id: roomsList[i],
+            name: memberName,
+            photoURL: photoURL,
+            latestMessage: latestMessage,
+            timestamp: timestamp,
+            phone: phone,
+          );
 
+          _rooms.add(incomingRoom);
+        }
         // _rooms.sort((a, b) => a.timestamp.isAfter(b.timestamp) ? 0 : 1);
 
         _state = RoomsState.ROOMS_LOADED;
@@ -168,33 +214,38 @@ class RoomsProvider extends GetxController {
   }
 
   Future<void> createRoom(
-      KonnectContact friendContact, String myNumber, String friendPhone) async {
+    KonnectContact friendContact,
+    String myNumber,
+    String friendPhone,
+  ) async {
     try {
       DocumentSnapshot snapshot =
           await _firestore.collection('users').doc('$myNumber').get();
 
-      Map<String, dynamic> data = snapshot.data();
+      Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
 
       List<String> _friends = [];
-      if (_friends.length > 0) {
-        data['friends'].forEach((dat) {
-          String d = dat as String;
-          _friends.add(d);
-        });
-      }
+      if (data['friends'] != null) _friends = List.from(data['friends']);
+      // if (_friends.length > 0) {
+      //   data['friends'].forEach((dat) {
+      //     String d = dat as String;
+      //     _friends.add(d);
+      //   });
+      // }
 
       bool isPresent = false;
 
-      if (_friends != null) isPresent = _friends.contains(friendPhone);
+      if (_friends.length > 0)
+        isPresent = _friends.contains(friendPhone.trim());
 
       if (isPresent) {
         QuerySnapshot roomSnapshot = await _firestore
             .collection('rooms')
-            .where('members', arrayContains: friendContact.phone)
+            .where('members', arrayContains: friendContact.phone.trim())
             .get();
 
         roomSnapshot.docs.forEach((room) {
-          Map<String, dynamic> roomData = room.data();
+          Map<String, dynamic> roomData = room.data() as Map<String, dynamic>;
 
           List<dynamic> roomMembers = roomData['members'];
           if (roomMembers.contains(myNumber)) {
@@ -219,22 +270,27 @@ class RoomsProvider extends GetxController {
           DocumentSnapshot friendSnapshot =
               await _firestore.collection('users').doc('$friendPhone').get();
 
-          List<String> userRooms = userSnapshot.data()['rooms'] == null
+          Map<String, dynamic> userData =
+              userSnapshot.data() as Map<String, dynamic>;
+
+          Map<String, dynamic> friendData =
+              friendSnapshot.data() as Map<String, dynamic>;
+          List<String> userRooms = userData['rooms'] == null
               ? []
-              : List<String>.from(userSnapshot.data()['rooms']);
-          List<String> friendRooms = friendSnapshot.data()['rooms'] == null
+              : List<String>.from(userData['rooms']);
+          List<String> friendRooms = friendData['rooms'] == null
               ? []
-              : List<String>.from(friendSnapshot.data()['rooms']);
+              : List<String>.from(friendData['rooms']);
 
           userRooms.add(roomId);
           friendRooms.add(roomId);
 
-          List<String> userFriends = userSnapshot.data()['friends'] == null
+          List<String> userFriends = userData['friends'] == null
               ? []
-              : List<String>.from(userSnapshot.data()['friends']);
-          List<String> friendsFriends = friendSnapshot.data()['friends'] == null
+              : List<String>.from(userData['friends']);
+          List<String> friendsFriends = friendData['friends'] == null
               ? []
-              : List<String>.from(friendSnapshot.data()['friends']);
+              : List<String>.from(friendData['friends']);
 
           userFriends.add('$friendPhone');
           friendsFriends.add('$myNumber');

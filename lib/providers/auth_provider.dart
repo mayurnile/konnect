@@ -7,20 +7,20 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../core/core.dart';
 
 class AuthProvider extends GetxController {
-  FirebaseAuth _firebaseAuth;
+  late FirebaseAuth _firebaseAuth;
 
-  String _name;
-  String _email;
-  String _phoneNumber;
-  String _otp;
-  String _phoneVerificationId;
-  String _photoURL;
-  String _password;
-  String _confirmPassword;
-  bool _showPassword;
-  bool _showConfirmPassword;
-  AuthState _state;
-  String _errorMessage;
+  String _name = '';
+  String _email = '';
+  String _phoneNumber = '';
+  String _otp = '';
+  String _phoneVerificationId = '';
+  String _photoURL = '';
+  String _password = '';
+  String _confirmPassword = '';
+  bool _showPassword = true;
+  bool _showConfirmPassword = true;
+  AuthState _state = AuthState.UNAUTHENTICATED;
+  String _errorMessage = '';
   bool _isLoggingIn = false;
 
   @override
@@ -29,20 +29,6 @@ class AuthProvider extends GetxController {
 
     //initialize firebase
     _firebaseAuth = FirebaseAuth.instance;
-
-    //initialize variables
-    _name = '';
-    _email = '';
-    _phoneNumber = '';
-    _otp = '';
-    _phoneVerificationId = '';
-    _photoURL = '';
-    _password = '';
-    _confirmPassword = '';
-    _errorMessage = '';
-    _showPassword = true;
-    _showConfirmPassword = true;
-    _state = AuthState.UNAUTHENTICATED;
   }
 
   //setter
@@ -81,7 +67,7 @@ class AuthProvider extends GetxController {
     _isLoggingIn = true;
     _setLoadingState();
     try {
-      final User user = (await _firebaseAuth.signInWithEmailAndPassword(
+      final User? user = (await _firebaseAuth.signInWithEmailAndPassword(
               email: email, password: password))
           .user;
 
@@ -113,23 +99,28 @@ class AuthProvider extends GetxController {
         _state = AuthState.AUTHENTICATED;
         update();
       } else {
-        final GoogleSignInAccount googleUser = await _googleSignIn.signIn();
-        final GoogleSignInAuthentication googleAuth =
-            await googleUser.authentication;
-        final AuthCredential credential = GoogleAuthProvider.credential(
-          accessToken: googleAuth.accessToken,
-          idToken: googleAuth.idToken,
-        );
+        final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+        GoogleSignInAuthentication? googleAuth;
+        AuthCredential? credential;
+        User? user;
 
-        final User user =
-            (await _firebaseAuth.signInWithCredential(credential)).user;
+        if (googleUser != null) googleAuth = await googleUser.authentication;
+
+        if (googleAuth != null)
+          credential = GoogleAuthProvider.credential(
+            accessToken: googleAuth.accessToken,
+            idToken: googleAuth.idToken,
+          );
+
+        if (credential != null)
+          user = (await _firebaseAuth.signInWithCredential(credential)).user;
 
         isSignedIn = await _googleSignIn.isSignedIn();
 
-        if (isSignedIn) {
-          _name = user.displayName;
-          _email = user.email;
-          _photoURL = user.photoURL;
+        if (isSignedIn && user != null) {
+          _name = user.displayName ?? '';
+          _email = user.email ?? '';
+          _photoURL = user.photoURL ?? '';
 
           _state = AuthState.AUTHENTICATED;
           update();
@@ -163,7 +154,7 @@ class AuthProvider extends GetxController {
     };
 
     PhoneCodeSent codeSent =
-        (String verificationId, [int forceResendingToken]) async {
+        (String verificationId, [int? forceResendingToken]) async {
       _phoneVerificationId = verificationId;
       _state = AuthState.OTP_SENT;
       update();
@@ -198,17 +189,18 @@ class AuthProvider extends GetxController {
     update();
 
     try {
+      print(_otp);
       final AuthCredential credential = PhoneAuthProvider.credential(
         verificationId: _phoneVerificationId,
         smsCode: _otp,
       );
 
-      final User user =
+      final User? user =
           (await _firebaseAuth.signInWithCredential(credential)).user;
 
       if (user != null) {
         if (_isLoggingIn)
-          await fetchUserDetails(user.email);
+          await fetchUserDetails(user.email!);
         else
           await addUserData();
         _state = AuthState.PHONE_AUTHENTICATED;
@@ -240,18 +232,20 @@ class AuthProvider extends GetxController {
         'phoneNumber': _phoneNumber,
       });
     } else {
-      if (_name == null) {
+      if (_name.length != 0) {
         await _firestore.collection('users').doc('$_phoneNumber').update({
           'email': _email,
           'avatar': _photoURL,
           'phoneNumber': _phoneNumber,
         });
-      } else if (_name == null && _email == null) {
+      } else if (_name.length != 0 && _email.length != 0) {
         await _firestore.collection('users').doc('$_phoneNumber').update({
           'avatar': _photoURL,
           'phoneNumber': _phoneNumber,
         });
-      } else if (_name == null && _email == null && _photoURL == null) {
+      } else if (_name.length != 0 &&
+          _email.length != 0 &&
+          _photoURL.length != 0) {
         await _firestore.collection('users').doc('$_phoneNumber').update({
           'phoneNumber': _phoneNumber,
         });
@@ -271,13 +265,15 @@ class AuthProvider extends GetxController {
   Future<bool> signup() async {
     _setLoadingState();
     try {
-      final User user = (await _firebaseAuth.createUserWithEmailAndPassword(
-              email: email, password: password))
+      final User? user = (await _firebaseAuth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      ))
           .user;
 
       if (user != null) {
-        _email = user.email;
-        _photoURL = user.photoURL;
+        _email = user.email ?? '';
+        _photoURL = user.photoURL ?? '';
 
         await _firebaseAuth.signOut();
 
@@ -320,11 +316,11 @@ class AuthProvider extends GetxController {
     DocumentSnapshot snapshot =
         await _firestore.collection('users').doc('$searchString').get();
 
-    Map<String, dynamic> data = snapshot.data();
+    Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
 
-    _email = data['email'];
-    _name = data['name'];
-    _phoneNumber = data['phoneNumber'];
+    _email = data['email'] ?? '';
+    _name = data['name'] ?? '';
+    _phoneNumber = data['phoneNumber'] ?? '';
     update();
   }
 

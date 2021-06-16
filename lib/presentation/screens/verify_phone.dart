@@ -65,7 +65,7 @@ class VerifyPhoneScreen extends StatelessWidget {
                   child: Text.rich(
                     TextSpan(
                       text: 'Just there...\n',
-                      style: textTheme.headline1
+                      style: textTheme.headline1!
                           .copyWith(fontWeight: FontWeight.w300),
                       children: [
                         TextSpan(
@@ -86,13 +86,13 @@ class VerifyPhoneScreen extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
                 inputType: TextInputType.number,
-                onChanged: (String value) =>
-                    _authProvider.setPhone = value.trim(),
+                onChanged: (String? value) =>
+                    _authProvider.setPhone = value!.trim(),
                 suffix: InkWell(
                   onTap: () => _sendOTP(_authProvider),
                   child: Text(
                     'SEND',
-                    style: textTheme.button.copyWith(
+                    style: textTheme.button!.copyWith(
                       color: KonnectTheme.PRIMARY_COLOR,
                       letterSpacing: 1.2,
                       fontWeight: FontWeight.w700,
@@ -104,8 +104,8 @@ class VerifyPhoneScreen extends StatelessWidget {
               MyTextField(
                 hint: 'OTP here',
                 inputType: TextInputType.number,
-                onChanged: (String value) =>
-                    _authProvider.setOTP = value.trim(),
+                onChanged: (String? value) =>
+                    _authProvider.setOTP = value!.trim(),
               ),
               //bottom spacing
               SizedBox(height: screenSize.height * 0.1),
@@ -141,8 +141,11 @@ class VerifyPhoneScreen extends StatelessWidget {
                 child: SizedBox(
                   width: screenSize.width * 0.15,
                   height: screenSize.width * 0.15,
-                  child: RaisedButton(
-                    elevation: 0.0,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0.0,
+                      primary: KonnectTheme.SECONDARY_COLOR,
+                    ),
                     child: _authProvider.authState ==
                             AuthState.AUTHENTICATING_PHONE
                         ? SizedBox(

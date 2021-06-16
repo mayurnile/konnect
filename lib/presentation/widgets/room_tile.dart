@@ -7,7 +7,7 @@ import '../../core/models/models.dart';
 class RoomTile extends StatelessWidget {
   final Room room;
 
-  RoomTile({@required this.room});
+  RoomTile({required this.room});
 
   @override
   Widget build(BuildContext context) {
@@ -52,17 +52,8 @@ class RoomTile extends StatelessWidget {
                       .toList(),
                 ),
             builder:
-                (BuildContext context, AsyncSnapshot<List<Message>> snapshot) {
-              if (snapshot.hasData) {
-                Message message;
-                message = snapshot.data.isNotEmpty
-                    ? snapshot.data.first
-                    : Message(
-                        createdTime: null,
-                        message: '',
-                        sender: '',
-                      );
-
+                (BuildContext context, AsyncSnapshot<List<Message>>? snapshot) {
+              if (snapshot != null && snapshot.hasData) {
                 //name and message
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12.0),
@@ -95,7 +86,7 @@ class RoomTile extends StatelessWidget {
                                 child: Text(
                                   room.name,
                                   key: ValueKey('receiver'),
-                                  style: textTheme.headline4
+                                  style: textTheme.headline4!
                                       .copyWith(fontWeight: FontWeight.w600),
                                 ),
                               ),
@@ -110,7 +101,7 @@ class RoomTile extends StatelessWidget {
                                 softWrap: true,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
-                                style: textTheme.subtitle2.copyWith(
+                                style: textTheme.subtitle2!.copyWith(
                                     color: KonnectTheme.FONT_LIGHT_COLOR),
                               ),
                             ),
@@ -150,7 +141,7 @@ class RoomTile extends StatelessWidget {
                     ],
                   ),
                 );
-              } else if (snapshot.hasError) {
+              } else if (snapshot!.hasError) {
                 return Text(snapshot.error.toString());
               }
               return const SizedBox.shrink();
@@ -162,7 +153,8 @@ class RoomTile extends StatelessWidget {
   }
 
   Widget _buildRoomAvatar() {
-    return room.photoURL != null
+    // ignore: unnecessary_null_comparison
+    return room.photoURL.length != 0
         ? CircleAvatar(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(52.0),
