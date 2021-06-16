@@ -58,27 +58,27 @@
 ### Here are the App Screenshots
 - Login Screen
 <br><br>
-<img src = "assets/media/Screen-1.jpg" height = 512>
+<img src = "assets/media/screen-1.jpg" height = 512>
 
 - Signup Screen
 <br><br>
-<img src = "assets/media/Screen-2.jpg" height = 512>
+<img src = "assets/media/screen-2.jpg" height = 512>
 
 - Verify OTP Screen
 <br><br>
-<img src = "assets/media/Screen-3.jpg" height = 512>
+<img src = "assets/media/screen-3.jpg" height = 512>
 
 - Home Screen
 <br><br>
-<img src = "assets/media/Screen-4.jpg" height = 512>
+<img src = "assets/media/screen-4.jpg" height = 512>
 
 - Chat Screen
 <br><br>
-<img src = "assets/media/Screen-5.jpg" height = 512>
+<img src = "assets/media/screen-5.jpg" height = 512>
 
 - Contacts Screen
 <br><br>
-<img src = "assets/media/Screen-6.jpg" height = 512>
+<img src = "assets/media/screen-6.jpg" height = 512>
 <br><br>
 
 # Try it Yourself
